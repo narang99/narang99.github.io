@@ -285,9 +285,15 @@ Start the grafana server. Use `npm run dev` to build the plugin. Grafana will lo
 Make a new dashboard. Add a panel. In edit panel, select GraphPlugin (or name of you plugin) in Visualization setting. Options can be changed from Display settings.
 
 
-![Bar option selected for GraphPanel plugin](/assets/grafana-graph-panel-plugin/bar-option.webp)
+<div class="image-with-caption">
+  <img src="{{site.url}}/assets/grafana-graph-panel-plugin/bar-option.webp" alt="Bar option selected for GraphPanel plugin">
+  <p>Bar option selected for GraphPanel plugin</p>
+</div>
 
-![Line option selected for GraphPanel plugin](/assets/grafana-graph-panel-plugin/line-option.webp)
+<div class="image-with-caption">
+  <img src="{{site.url}}/assets/grafana-graph-panel-plugin/line-option.webp" alt="Line option selected for GraphPanel plugin">
+  <p>Line option selected for GraphPanel plugin</p>
+</div>
 
 # Conclusion
 

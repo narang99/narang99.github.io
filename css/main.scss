@@ -242,6 +242,20 @@ pre {
             }
         }
     }
+    .floating-right-picture {
+        width: 15%;
+        margin: 5px 5px 5px 5px;
+        float: right;
+        p & {
+            padding: 0;
+            margin: 0;
+        }
+        @media (max-width: $small-width) {
+            img {
+                margin-top: -5px;
+            }
+        }
+    }
     img {
         text-align: center;
         margin: 10px 10px 10px 10px;
@@ -307,4 +321,25 @@ table tr th :first-child, table tr td :first-child {
 }
 table tr th :last-child, table tr td :last-child {
     margin: 0;
+}
+
+.image-with-caption {
+  text-align: center;
+}
+
+.image-with-caption img {
+  max-width: 100%;
+  border-radius: 8px; /* Optional: rounded corners */
+}
+
+.image-with-caption p {
+  font-style: italic;
+  color: #555;
+  margin-top: 5px;
+}
+
+.content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
