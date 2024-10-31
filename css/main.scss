@@ -6,11 +6,27 @@
 
 $accent: #FF0F00;
 
+$inline-code-block-bg: #d4d48e;
+
 $max-width: 740px;
 $med-width: 600px;
 $small-width: 480px;
 
 // Basic
+
+iframe {
+    width: 480;
+    height: 360;
+    margin: 0 auto;
+    display: block;
+    border-style:none;
+}
+
+.language-plaintext.highlighter-rouge {
+  background-color: $inline-code-block-bg;
+  border-radius: 5px;
+  padding: 2px;
+}
 
 body {
     margin: 0;
@@ -32,8 +48,8 @@ hr {
 }
 
 pre {
-  padding: 1em;
-  border-radius: 10px;
+  padding: 1rem;
+  overflow-x: auto;
 }
 
 .pull-left {
