@@ -1,0 +1,48 @@
+@use "vars";
+
+img {
+  text-align: center;
+  margin: 10px 10px 10px 10px;
+  max-width: vars.$max-width;
+}
+
+.picture-on-the-side {
+  width: 25%;
+  margin: 5px 5px 5px 5px;
+  float: right;
+  p & {
+    padding: 0;
+    margin: 0;
+  }
+  @media (max-width: vars.$small-width) {
+    img {
+        margin-top: -5px;
+    }
+  }
+}
+
+.profile-picture, .floating-right-picture {
+  @extend .picture-on-the-side;
+  float: right;
+}
+
+.floating-left-picture {
+  @extend .picture-on-the-side;
+  float: left;
+}
+
+
+// .profile-picture, .floating-right-picture {
+//     width: 15%;
+//     margin: 5px 5px 5px 5px;
+//     float: right;
+//     p & {
+//         padding: 0;
+//         margin: 0;
+//     }
+//     @media (max-width: vars.$small-width) {
+//         img {
+//             margin-top: -5px;
+//         }
+//     }
+// }

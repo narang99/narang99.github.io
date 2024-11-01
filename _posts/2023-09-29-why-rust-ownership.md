@@ -5,6 +5,8 @@ subtitle: why do we really need ownership in rust?
 tags: [rust]
 ---
 
+**NOTE: This is an old post that I've transferred here, the original post is [here in medium](https://medium.com/@hariom.2711/rust-ownership-from-scratch-7cbb1369aebe). The blog post date is the date when I originally posted it, although I moved it here in Oct. 2024**  
+
 Memory ownership in Rust sounds like a very alien concept to someone like me who has been coding in garbage collected languages for a long time.  
 The first thing that always comes to mind is “why even do this?”. I’ll try to provide the motivation behind it in this blog post.  
 Before that, it would be good if you are at least familiar with what the concept is. This [chapter](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html) does a good job teaching that.  

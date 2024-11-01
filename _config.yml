@@ -3,7 +3,6 @@ author: narang99
 subtitle: engineering anything and everything
 
 url: "https://narang99.github.io"
-# baseurl: "/"
 
 footer_only_homepage: true
 footer_url: "https://github.com/narang99"
@@ -14,8 +13,9 @@ favicon_location: assets/favicon.ico
 
 permalink: /:year-:month-:day-:title/
 sass:
-    style: compressed
-    sass_dir: css
+  style: compressed
+  sass_dir: _sass
+
 highlighter: rouge
 
 navbar:
