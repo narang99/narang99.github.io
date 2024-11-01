@@ -151,7 +151,7 @@ I really hope managing memory becomes second nature. Otherwise I can only assume
 Let’s count the memory allocations of this code for the sample array `[0, -1, 0.4, 1.5]`
 
 <div class="image-with-caption">
-  <img src="{{site.url}}/assets/rust-why-ownership/tree.webp" alt="Memory allocations in circles, array for input to _merge_sort in squares">
+  <img src="/assets/rust-why-ownership/tree.webp" alt="Memory allocations in circles, array for input to _merge_sort in squares">
   <p>Memory allocations in circles, array for input to _merge_sort in squares</p>
 </div>
 

@@ -286,12 +286,12 @@ Make a new dashboard. Add a panel. In edit panel, select GraphPlugin (or name of
 
 
 <div class="image-with-caption">
-  <img src="{{site.url}}/assets/grafana-graph-panel-plugin/bar-option.webp" alt="Bar option selected for GraphPanel plugin">
+  <img src="/assets/grafana-graph-panel-plugin/bar-option.webp" alt="Bar option selected for GraphPanel plugin">
   <p>Bar option selected for GraphPanel plugin</p>
 </div>
 
 <div class="image-with-caption">
-  <img src="{{site.url}}/assets/grafana-graph-panel-plugin/line-option.webp" alt="Line option selected for GraphPanel plugin">
+  <img src="/assets/grafana-graph-panel-plugin/line-option.webp" alt="Line option selected for GraphPanel plugin">
   <p>Line option selected for GraphPanel plugin</p>
 </div>
 
