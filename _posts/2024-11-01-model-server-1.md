@@ -20,12 +20,12 @@ In this article, we will understand **model input batching** and its implication
 # Background
 
 We are going to try to maximise the inference performance of a Resnet-101 model  
-*Note: A pretrained Resnet-101 from pytorch is a ~171MB file. Models are [qure.ai](https://www.qure.ai) are much larger.*  
+*Note: A pretrained Resnet-101 from pytorch is a ~171MB file. Models at [qure.ai](https://www.qure.ai) are much larger.*  
 
 
 The model that we are going to optimise is available publicly [here at my public S3 bucket](https://narang-public-s3.s3.us-east-1.amazonaws.com/narang99-pages/models-at-scale/bees_vs_ants.pth)  
-> This model takes an input tensor of shape `[batch, channels=3, height=224, width=224]` (standard resnet dimensions), and outputs a tensor of shape `[1, 2]`, it looks like this `[[<a float probability of the input being an ant>, <a float probability of the input being a bee>]]`, you classify the input with whatever gives the higher probability  
-> The model is stolen and trained from [official pytorch transfer learning tutorial](https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html), I tweaked the notebook a bit to train a resnet-101 instead of a resnet-18  
+> This model takes an input tensor of shape `[batch, channels=3, height=224, width=224]` (standard resnet dimensions) and outputs a tensor of shape `[1, 2]` with structure `[[<probability-ant>, <probability-bee>]]`, you classify the input with whatever gives the higher probability  
+> The model is borrowed and trained from [official pytorch transfer learning tutorial](https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html), I tweaked the notebook a bit to train a resnet-101 instead of a resnet-18  
 > You don't need to go through the training part for this exercise, you can simply download the model above
 
 
@@ -50,15 +50,16 @@ conda install anaconda::notebook conda-forge::matplotlib -y
 # Cuda: 12.2
 # Package manager: conda
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-
-# the command above downloads a shit load of dependencies, takes its time
 ```
 
+Download the model
 ```bash
-# download the model for this experiment
 wget https://narang-public-s3.s3.us-east-1.amazonaws.com/narang99-pages/models-at-scale/bees_vs_ants.pth
 ```
 # Experiment
+
+This is my goto strategy and code for basic benchmarking, go through the comments to understand individual bits  
+**Always benchmark the base performance of your model like this, before putting it behind some server, its important to set a baseline**  
 
 Open a jupyter notebook and add the following snippets:
 
@@ -118,7 +119,7 @@ ip = get_randn_input(batch_size)
 %timeit single_inference(model, ip)
 ```
 
-Change batch size to different numbers and collect your statistics, as an example, running this:
+Change batch size to different numbers and collect your statistics, heres an example run:
 
 ```python
 ip = get_randn_input(2)
@@ -156,8 +157,9 @@ This is how the model runs look on my machine, I'm using an [NVIDIA GeForce RTX 
   - **Essentially, we have more than doubled the throughput of our inference function `single_inference`, but the latency of a single tensor has degraded a lot**
 - **This tells us that Batch inferencing has an inherent tradeoff between throughput and latency**, you need to find the soft spot (which batch size do you want?)
   - Always have this table with you, and **make sure you run this experiment on different GPUs (the difference can be massive on newer GPUs, its always best to run it on the GPU you will use on production)**
+  - Your batch size would eventually depend on your environment and request load
 
-If you are lucky, batching can 2x your throughput  
+If you are lucky, batching can 2x your throughput (as it has in this case)  
 As a rule, I always do this exercise, playing around with the model I need to deploy, before even thinking of optimising it  
 
 Now, how do you batch your inputs? The solution we chose lies in [Model Servers like TorchServe](https://www.google.com/search?client=safari&rls=en&q=torchserve&ie=UTF-8&oe=UTF-8), I'll write about them in the next article
