@@ -49,12 +49,12 @@ cd graph-plugin
 npm install
 ```
 
-You’ll see a skeleton directory structure. `module.tsx` (the skeleton structure may have `module.ts`, its easier to change the extension to `tsx`)is the entry-point of the Plugin. `plugin.json` has plugin related metadata. You can change the name attribute to provide a name to your plugin. type can be panel, datasource, app.
+You’ll see a skeleton directory structure. `module.tsx` (the skeleton structure may have `module.ts`, its easier to change the extension to `tsx`)is the entry-point of the Plugin. `plugin.json` has plugin related metadata. You can change the name attribute to provide a name to your plugin. `type` can be `panel`, `datasource`, `app`.
 
 
 # Panel Plugin Basics
 
-Your main panel should have props of type `PanelProps<options>`. You have to specify the type for options. options are basically used to enable the user to provide custom settings for your panel. The type you specify for options governs this behavior. For now we keep it empty.
+Your main panel should have props of type `PanelProps<options>`. You have to specify the type for options. `options` are basically used to enable the user to provide custom settings for your panel. The type you specify for options governs this behavior. For now we keep it empty.
 
 ```typescript
 import React from 'react';
@@ -99,7 +99,7 @@ export interface GraphProps {
 }
 ```
 
-The required props are `width`, `height`, `timeRange`, `series`. You can pass `props.width`, `props.height`, `props.timeRange` to the first three respectively (These are good defaults). series prop holds the data you want to render in your graph. Each line that you see on a normal Grafana is of type `GraphSeriesXY.` Each panel can render multiple lines for different metrics/variables and therefore series is an array of `GraphSeriesXY.` We can construct `series` prop from `props.data.` All time-series data in Grafana is stored and used as an object of type `DataFrame.` It is kind of like data frames in data science if you are familiar with them (like pandas dataframes). `props.data.series` is of type `DataFrame[]`, ie. you have a collection of time-series data stored as an array. Each item in this array corresponds to a single element in your `GraphSeriesXY[]` array. We have to therefore map object of type `DataFrame` to object of type `GraphSeriesXY`. This can be done in a straightforward way as follows:
+The required props are `width`, `height`, `timeRange`, `series`. You can pass `props.width`, `props.height`, `props.timeRange` to the first three respectively (These are good defaults). `series` prop holds the data you want to render in your graph. Each line that you see on a normal Grafana is of type `GraphSeriesXY.` Each panel can render multiple lines for different metrics/variables and therefore series is an array of `GraphSeriesXY.` We can construct `series` prop from `props.data.` All time-series data in Grafana is stored and used as an object of type `DataFrame.` It is kind of like data frames in data science if you are familiar with them (like pandas dataframes). `props.data.series` is of type `DataFrame[]`, ie. you have a collection of time-series data stored as an array. Each item in this array corresponds to a single element in your `GraphSeriesXY[]` array. We have to therefore map object of type `DataFrame` to object of type `GraphSeriesXY`. This can be done in a straightforward way as follows:
 
 
 ```typescript
@@ -128,7 +128,7 @@ return ser;
 });
 ```
 
-We map through `props.data.series`. Each itemis of type `DataFrame`. The time-series data is stored in the `fields` array of `item`. Each field inside the `fields` array consists of data points for a single axis. We have two axis in our graphs, `time` (`fields[0]`, x axis) and `values` (`fields[1]`, y axis). We construct `data` of type `GraphSeriesValue[][]`. We create `ser` using `data`, `fields` and `timeRange` in unix values. From this transformation we get a `series` array which can be passed to `Graph` component. Make sure to give a distinct index to each item in `series` (`ser_ind` here). You can take a look at type `GraphSeriesXY` if you want to play around with other props like `color`, etc.
+We map through `props.data.series`. Each item is of type `DataFrame`. The time-series data is stored in the `fields` array of `item`. Each field inside the `fields` array consists of data points for a single axis. We have two axis in our graphs, `time` (`fields[0]`, x axis) and `values` (`fields[1]`, y axis). We construct `data` of type `GraphSeriesValue[][]`. We create `ser` using `data`, `fields` and `timeRange` in unix values. From this transformation we get a `series` array which can be passed to `Graph` component. Make sure to give a distinct index to each item in `series` (`ser_ind` here). You can take a look at type `GraphSeriesXY` if you want to play around with other props like `color`, etc.
 
 # Graph Component
 

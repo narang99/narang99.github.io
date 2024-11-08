@@ -248,7 +248,7 @@ As I was writing this code and was struggling with managing my memory, I ended u
 
 The code now follows the following assumptions:  
 1. _merge_sort “borrows” its input arguments halves.left and halves.right
-2. It only every reads those arguments, doesn’t play with their memory
+2. It only every reads those arguments, does not play with their memory
 3. _merge function creates a new pointer with the sorted result and returns it, in essence transferring the ownership to the calling function
 4. left and right created inside _merge_sort are always owned by _merge_sort (either with transfer from another _merge_sort down the stack, or by copying contents of the borrowed inputs)
 5. This makes it safe for _merge_sort to free memory for left and right

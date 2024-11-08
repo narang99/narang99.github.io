@@ -20,7 +20,7 @@ In this article, we will understand **model input batching** and its implication
 # Background
 
 We are going to try to maximise the inference performance of a Resnet-101 model  
-*Note: A pretrained Resnet-101 from pytorch is a ~171MB file. Models at [qure.ai](https://www.qure.ai) are much larger.*  
+*Note: A pre-trained Resnet-101 from pytorch is a ~171MB file. Models at [qure.ai](https://www.qure.ai) are much larger.*  
 
 
 The model that we are going to optimise is available publicly [here at my public S3 bucket](https://narang-public-s3.s3.us-east-1.amazonaws.com/narang99-pages/models-at-scale/bees_vs_ants.pth)  
@@ -153,13 +153,13 @@ This is how the model runs look on my machine, I'm using an [NVIDIA GeForce RTX 
   - A batch of size `1` gives us result in `2.75ms`, but a batch of size `32` gives all the results in `37.3ms`
   - Our overall latency increased for all the inputs increased
   - but consider how long it would take to get outputs of 32 inputs, one at a time: `32 * 2.75 = 88ms`
-  - This is atleast double the time taken by a batched 32 tensor batch
+  - This is at least double the time taken by a batched 32 tensor batch
   - **Essentially, we have more than doubled the throughput of our inference function `single_inference`, but the latency of a single tensor has degraded a lot**
-- **This tells us that Batch inferencing has an inherent tradeoff between throughput and latency**, you need to find the soft spot (which batch size do you want?)
+- **This tells us that Batch inferencing has an inherent trade-off between throughput and latency**, you need to find the soft spot (which batch size do you want?)
   - Always have this table with you, and **make sure you run this experiment on different GPUs (the difference can be massive on newer GPUs, its always best to run it on the GPU you will use on production)**
   - Your batch size would eventually depend on your environment and request load
 
 If you are lucky, batching can 2x your throughput (as it has in this case)  
 As a rule, I always do this exercise, playing around with the model I need to deploy, before even thinking of optimising it  
 
-Now, how do you batch your inputs? The solution we chose lies in [Model Servers like TorchServe](https://www.google.com/search?client=safari&rls=en&q=torchserve&ie=UTF-8&oe=UTF-8), I'll write about them in the next article
+Now, how do you batch your inputs? The solution we chose lies in [Model Servers like TorchServe](https://github.com/pytorch/serve), I'll write about them in the next article
