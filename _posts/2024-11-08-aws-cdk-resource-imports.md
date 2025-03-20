@@ -18,10 +18,9 @@ This happens when:
 The above action would add an ingress rule in the imported resource's security group from your stack's resource. **It would however, also add an entry in the outbound rules of the imported resource's security group, allowing it to connect to your resources. This would remove the default allow-all outbound rule, resulting in the imported resource losing internet access.**   
 
 
-The solution is to import the security group associated with the imported resource explicitly and manage its connections.  
+The solution is to import the security group associated with the imported resource explicitly and manage its connections. You essentially need to set `allow_all_outbound` and `allow_all_ipv6_outbound` to `True`  
 I'm keeping a list of correct ways to import your resources in CDK here (examples are in python)  
 
----
 ## Plain old security-groups
 
 ### Bad
@@ -70,7 +69,6 @@ instance=rds.DatabaseInstance.from_database_instance_attributes(
 ```
 
 ## Application Load Balancer
-Aaaah my nemesis 🥲
 
 ### Bad
 ```python
@@ -94,7 +92,6 @@ elb = elbv2.ApplicationLoadBalancer.from_application_load_balancer_attributes(
 ```
 
 ## Application Load Balancers: Listeners
-Similar to ALB, I had this fixed when I saw my fault with ALB
 
 ### Bad
 ```python
