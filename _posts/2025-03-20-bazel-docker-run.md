@@ -427,8 +427,6 @@ container_run_and_commit_layer = rule(
 
 # Wrapping up
 
-<img class="floating-right-picture" src="/assets/tired-duck.png">
-
 That's it! After a reasonably long blog,  we have successfully implemented a basic version of `container_run_and_commit` for rules_oci. Its not the most robust implementation out there, but it works!
 
 The code is good for basic use-cases and should be usable. I would still like to caution the user to only use this as a last resort. 
