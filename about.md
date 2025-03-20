@@ -18,4 +18,4 @@ PS: Why the duck? I kinda just find them cool, I don't have a pet or anything, b
 
 
 
-*The base theme is shamelessly stolen from: [https://github.com/rhl-bthr/parchment](https://github.com/rhl-bthr/parchment)*
+*The base theme is borrowed from: [https://github.com/rhl-bthr/parchment](https://github.com/rhl-bthr/parchment)*
