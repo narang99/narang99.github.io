@@ -2,8 +2,33 @@
     <a class="site-title" href="{{ site.url }}/">{{ site.title }}</a>
 
     <ul class="pull-right">
+        <li class="pull-left" style="display: flex; align-items: center;">
+            <script>
+                // Set initial icon based on theme
+                const themeIcon = document.getElementById('themeIcon');
+                if (document.body.classList.contains('dark-theme')) {
+                    themeIcon.src = '/assets/brightness.png';
+                } else {
+                    themeIcon.src = '/assets/darkness.png';
+                }
+
+                function toggleTheme() {
+                    const body = document.body;
+                    if (body.classList.contains('dark-theme')) {
+                        body.classList.remove('dark-theme');
+                        localStorage.setItem('theme', 'light');
+                        themeIcon.src = '/assets/darkness.png';
+                    } else {
+                        body.classList.add('dark-theme');
+                        localStorage.setItem('theme', 'dark');
+                        themeIcon.src = '/assets/brightness.png';
+                    }
+                }
+            </script>
+            <button onclick="toggleTheme()" style="background: none; border: none; cursor: pointer; padding: 0;"><img id="themeIcon" src="/assets/brightness.png" alt="Toggle Theme" style="width: 20px; height: 20px; margin: 0px; filter: var(--accent-filter);"></button>
+        </li>
         {% for x in site.navbar %}
-        <li class="pull-left">
+        <li class="pull-left" style="display: flex; align-items: center;">
             {% if x.absolute-link %}
                 {% assign x-url = x.absolute-link %}
             {% else %}

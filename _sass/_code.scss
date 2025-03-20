@@ -1,0 +1,74 @@
+@use "code_light" as light;
+@use "code_dark" as dark;
+
+.syntax, .highlight {
+  @at-root {
+    :root {
+      .syntax, .highlight {
+        background: light.$syntax-bg;
+        color: light.$syntax-color;
+
+        .hll { background-color: light.$hll-bg; }
+        .c { color: light.$comment-color; font-style: italic; }
+        .g { color: light.$generic-color; }
+        .k { color: light.$keyword-color; }
+        .l { color: light.$literal-color; }
+        .n { color: light.$name-color; }
+        .o { color: light.$syntax-color; }
+        .p { color: light.$syntax-color; }
+        .ch, .cm, .cp, .cpf, .c1, .cs { color: light.$comment-color; font-style: italic; }
+        .gd, .ge, .gr, .gh, .gi, .go, .gp, .gs, .gu, .gt { color: light.$generic-color; }
+        .kc, .kd, .kn, .kp, .kr { color: light.$keyword-color; }
+        .kt { color: light.$keyword-color; font-weight: bold; }
+        .ld { color: light.$literal-color; }
+        .m, .mb, .mf, .mh, .mi, .mo { color: light.$literal-color; font-weight: bold; }
+        .s { color: light.$string-color; }
+        .na { color: light.$name-color; }
+        .nb, .nc { color: light.$name-builtin-color; }
+        .no, .nd, .ni, .ne, .nf, .nl, .nn, .nx, .py { color: light.$name-color; }
+        .nt { color: light.$name-color; font-weight: bold; }
+        .nv { color: light.$name-color; }
+        .ow { color: light.$keyword-color; }
+        .w { color: light.$syntax-color; }
+        .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .sr, .s1, .ss { color: light.$string-color; }
+        .bp { color: light.$name-builtin-color; }
+        .vc, .vg, .vi { color: light.$name-color; }
+        .il { color: light.$literal-color; font-weight: bold; }
+      }
+    }
+
+    body.dark-theme {
+      .syntax, .highlight {
+        background: dark.$syntax-bg;
+        color: dark.$syntax-color;
+
+        .hll { background-color: dark.$hll-bg; }
+        .c { color: dark.$comment-color; font-style: italic; }
+        .g { color: dark.$generic-color; }
+        .k { color: dark.$keyword-color; }
+        .l { color: dark.$literal-color; }
+        .n { color: dark.$name-color; }
+        .o { color: dark.$syntax-color; }
+        .p { color: dark.$syntax-color; }
+        .ch, .cm, .cp, .cpf, .c1, .cs { color: dark.$comment-color; font-style: italic; }
+        .gd, .ge, .gr, .gh, .gi, .go, .gp, .gs, .gu, .gt { color: dark.$generic-color; }
+        .kc, .kd, .kn, .kp, .kr { color: dark.$keyword-color; }
+        .kt { color: dark.$keyword-color; font-weight: bold; }
+        .ld { color: dark.$literal-color; }
+        .m, .mb, .mf, .mh, .mi, .mo { color: dark.$literal-color; font-weight: bold; }
+        .s { color: dark.$string-color; }
+        .na { color: dark.$name-color; }
+        .nb, .nc { color: dark.$name-builtin-color; }
+        .no, .nd, .ni, .ne, .nf, .nl, .nn, .nx, .py { color: dark.$name-color; }
+        .nt { color: dark.$name-color; font-weight: bold; }
+        .nv { color: dark.$name-color; }
+        .ow { color: dark.$keyword-color; }
+        .w { color: dark.$syntax-color; }
+        .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .sr, .s1, .ss { color: dark.$string-color; }
+        .bp { color: dark.$name-builtin-color; }
+        .vc, .vg, .vi { color: dark.$name-color; }
+        .il { color: dark.$literal-color; font-weight: bold; }
+      }
+    }
+  }
+} 

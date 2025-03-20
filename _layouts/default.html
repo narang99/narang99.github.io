@@ -3,7 +3,18 @@
 
 {% include head.html %}
 
-<body>
+<body class="{% if site.theme == 'dark' %}dark-theme{% endif %}">
+    <script>
+        // Check if user has a saved theme preference
+        const bodySavedTheme = localStorage.getItem('theme');
+        
+        // Set theme based on saved preference
+        if (bodySavedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    </script>
     <div class="container">
         {% include navbar.html %}
         <div class="page-title">

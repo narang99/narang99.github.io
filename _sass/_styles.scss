@@ -1,6 +1,63 @@
-@use "monokai";
+@use "code";
+@use "light_vars" as light;
+@use "dark_vars" as dark;
 @use "vars";
 @use "imgs";
+
+@mixin themed-styles {
+    @at-root {
+        :root {
+            --accent: #{light.$accent};
+            --inline-code-block-bg: #{light.$inline-code-block-bg};
+            --body-bg: #{light.$body-bg};
+            --text-color: #{light.$text-color};
+            --title-color: #{light.$title-color};
+            --border-light: #{light.$border-light};
+            --border-dark: #{light.$border-dark};
+            --border-medium: #{light.$border-medium};
+            --blockquote-border: #{light.$blockquote-border};
+            --table-border: #{light.$table-border};
+            --table-bg: #{light.$table-bg};
+            --table-alt-bg: #{light.$table-alt-bg};
+            --caption-color: #{light.$caption-color};
+            --highlight-red: #{light.$highlight-red};
+            --highlight-orange: #{light.$highlight-orange};
+            --highlight-green: #{light.$highlight-green};
+            --highlight-blue: #{light.$highlight-blue};
+            --color-red: #{light.$color-red};
+            --color-orange: #{light.$color-orange};
+            --color-green: #{light.$color-green};
+            --color-blue: #{light.$color-blue};
+        }
+
+        body.dark-theme {
+            --accent: #{dark.$accent};
+            --inline-code-block-bg: #{dark.$inline-code-block-bg};
+            --body-bg: #{dark.$body-bg};
+            --text-color: #{dark.$text-color};
+            --title-color: #{dark.$title-color};
+            --border-light: #{dark.$border-light};
+            --border-dark: #{dark.$border-dark};
+            --border-medium: #{dark.$border-medium};
+            --blockquote-border: #{dark.$blockquote-border};
+            --table-border: #{dark.$table-border};
+            --table-bg: #{dark.$table-bg};
+            --table-alt-bg: #{dark.$table-alt-bg};
+            --caption-color: #{dark.$caption-color};
+            --highlight-red: #{dark.$highlight-red};
+            --highlight-orange: #{dark.$highlight-orange};
+            --highlight-green: #{dark.$highlight-green};
+            --highlight-blue: #{dark.$highlight-blue};
+            --color-red: #{dark.$color-red};
+            --color-orange: #{dark.$color-orange};
+            --color-green: #{dark.$color-green};
+            --color-blue: #{dark.$color-blue};
+        }
+    }
+}
+
+@include themed-styles;
+
 
 iframe {
     width: 480;
@@ -11,7 +68,7 @@ iframe {
 }
 
 .language-plaintext.highlighter-rouge {
-  background-color: vars.$inline-code-block-bg;
+  background-color: var(--inline-code-block-bg);
   border-radius: 5px;
   padding: 2px;
 }
@@ -19,12 +76,13 @@ iframe {
 body {
     margin: 0;
     font-family: "Inconsolata";
-    background-color: #FFFFDD;
+    background-color: var(--body-bg);
     min-height: 100%;
+    color: var(--text-color);
 }
 a {
     text-decoration: none;
-    color: vars.$accent;
+    color: var(--accent);
 }
 a:hover {
     text-decoration: underline;
@@ -68,7 +126,6 @@ pre {
     padding: 30px 0 20px 0;
     .site-title{
         font-size: 32px;
-        color: #272727;
         display: inline-block;
     }
 }
@@ -79,7 +136,6 @@ pre {
     margin-bottom:1em;
     .title{
         max-width: 500px;
-        color: #272727;
         display: inline-block;
         font-size: 30px;
     }
@@ -107,17 +163,19 @@ pre {
     font-size: xx-large;
     font-weight: bold;
     line-height: 2;
+    color: var(--title-color);
 }
 .page-subtitle{
     text-align: center;
     margin-bottom: 1em;
+    color: var(--title-color);
 }
 
 // footer
 
 .footer{
     a {
-        color:black;
+        color: black;
     }
     text-align: center;
     font-size: small;
@@ -177,13 +235,14 @@ pre {
     h1, h2, h3, h4 {
         margin-block-start: 2em !important;
         margin-block-end: 0em !important;
+        color: var(--title-color);
     }
     h1:after, h2:after, h3:after, h4:after {
         content: '';
         display: block;
         width: 50%;
-        border-top: 0.5px solid rgba(0, 0, 0, 0.1);
-        border-bottom: 0.5px solid rgba(50, 50, 50, 0.3);
+        border-top: 0.5px solid var(--border-light);
+        border-bottom: 0.5px solid var(--border-medium);
     }
 
     ol {
@@ -212,35 +271,35 @@ pre {
         left: -30px;
     }
     blockquote {
-        border-left: 5px solid #333333;
+        border-left: 5px solid var(--blockquote-border);
         margin: 5px 0;
         padding: 0px 8px;
         font-style: italic;
     }
 
     .color-red {
-        color: #FF0F00;
+        color: var(--color-red);
     }
     .color-orange {
-        color: #eb9800;
+        color: var(--color-orange);
     }
     .color-green {
-        color:#00eb1d;
+        color: var(--color-green);
     }
     .color-blue{
-        color: #0062ff;
+        color: var(--color-blue);
     }
     .highlight-red {
-        background-color: #ffaaaa;
+        background-color: var(--highlight-red);
     }
     .highlight-orange {
-        background-color: #ffd486;
+        background-color: var(--highlight-orange);
     }
     .highlight-green {
-        background-color: #aaffad;
+        background-color: var(--highlight-green);
     }
     .highlight-blue {
-        background-color: #d8e7ff;
+        background-color: var(--highlight-blue);
     }
 }
 
@@ -251,23 +310,23 @@ table {
     padding: 0;
 }
 table tr {
-    border-top: 1px solid #cccccc;
-    background-color: white;
+    border-top: 1px solid var(--table-border);
+    background-color: var(--table-bg);
     margin: 0;
     padding: 0;
 }
 table tr:nth-child(2n) {
-    background-color: #f8f8f8;
+    background-color: var(--table-alt-bg);
 }
 table tr th {
     font-weight: bold;
-    border: 1px solid #cccccc;
+    border: 1px solid var(--table-border);
     text-align: left;
     margin: 0;
     padding: 6px 13px;
 }
 table tr td {
-    border: 1px solid #cccccc;
+    border: 1px solid var(--table-border);
     text-align: left;
     margin: 0;
     padding: 6px 13px;
@@ -290,7 +349,7 @@ table tr th :last-child, table tr td :last-child {
 
 .image-with-caption p {
   font-style: italic;
-  color: #555;
+  color: var(--caption-color);
   margin-top: 5px;
 }
 
