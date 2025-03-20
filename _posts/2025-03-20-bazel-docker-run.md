@@ -7,7 +7,7 @@ tags: [bazel, docker]
 
 If you have used bazel, chances are, you are using it to generate your docker images. There are two rules which enable this: [rules_docker](https://github.com/bazelbuild/rules_docker) and [rules_oci](https://github.com/bazel-contrib/rules_oci)   
 `rules_docker` is no longer maintained, it does not support the Bazel 8 module system. Due to this, at qure.ai, we had to migrate our `rules_docker` implementations to `rules_oci`. A fundamental blocker is the lack of support of `container_run_and_commit` and friends (equivalent to `RUN` inside a `Dockerfile`). This blog post describes the rule implementation which was ported from `rules_docker` with minor patches (its a very basic and rough implementation, without any toolchains support).  
-Note that the code in this blog is not exhaustive (it lacks cleanup and is closer to pseudocode)
+Note that the code in this blog is not exhaustive (it lacks cleanup and is closer to pseudocode). You can find the full code at [my github repo](https://github.com/narang99/oci_container_run_and_commit)
 
 > A `RUN` instruction is fundamentally non-hermetic (it can have unintended side-effects [like making internet calls] which bazel has no way of knowing about). It does not fit well with bazel's philosophy of deterministic package building. This is the main reason `rules_oci` does not provide `container_run_and_commit`. You should always look at alternative solutions before using this rule :)   
 
@@ -35,6 +35,15 @@ oci_run_and_commit(
 This rule expects a target of type `oci_image` as base, and a list of strings as commands.  
 A new image would be created by committing the result of commands on the base image, the target type is `oci_image`. Arguments other than `name`, `base`, `commands` and `tars` are passed to the final `oci_image` target  
 
+Approximately similar to creating a `Dockerfile` with the content below
+```Dockerfile
+# actual docker image referenced by :base_nginx
+FROM nginx
+
+RUN curl https://github.com/my-cool-nginx-conf -o /etc/nginx/nginx.conf && \
+    echo 'using my cool conf'
+```
+And docker building this `Dockerfile`
 
 # The top level rule macro implementation
 
@@ -417,3 +426,10 @@ container_run_and_commit_layer = rule(
 ```
 
 # Wrapping up
+
+<img class="floating-right-picture" src="/assets/tired-duck.png">
+
+That's it! After a reasonably long blog [I'm tried ;_;], we have successfully implemented a basic version of `container_run_and_commit` for rules_oci. Its not the most robust implementation out there, but it works!
+You can find the full code at TODO.  
+
+The code is good for basic use-cases and should be usable. I would still like to caution the user to only use this as a last resort. Also this rule can be very slow for big base docker images (load and save are costly operations). And its not hermetic :)
