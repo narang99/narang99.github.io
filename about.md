@@ -10,7 +10,7 @@ I'm Hariom Narang, a software engineer from Bangalore, India. I currently work a
 
 I've always loved reading books (I'm one of the fallen [Malazan](https://www.goodreads.com/series/43493-malazan-book-of-the-fallen) [pun intended] readers who just cant finish the series). Currently reading Stormlight archives. Recently have started liking sketching a lot, I hope to create realistic potraits some day :)
 
-
+Feel free to reach out at <span class="email">hariom.2711@gmail.com</span>
 
 ---
 
@@ -18,4 +18,5 @@ PS: Why the duck? I kinda just find them cool, I don't have a pet or anything, b
 
 
 
-*The base theme is borrowed from: [https://github.com/rhl-bthr/parchment](https://github.com/rhl-bthr/parchment)*
+*Theme credits : [Base Theme: Parchment](https://github.com/rhl-bthr/parchment)*  
+*Borrowed the basic colors from [Gradfolio](https://github.com/jitinnair1/gradfolio)*  

@@ -28,6 +28,12 @@
             --color-orange: #{light.$color-orange};
             --color-green: #{light.$color-green};
             --color-blue: #{light.$color-blue};
+            .dark-theme-icon {
+                display: block;
+            }
+            .light-theme-icon {
+                display: none;
+            }
         }
 
         body.dark-theme {
@@ -52,6 +58,12 @@
             --color-orange: #{dark.$color-orange};
             --color-green: #{dark.$color-green};
             --color-blue: #{dark.$color-blue};
+            .dark-theme-icon {
+                display: none;
+            }
+            .light-theme-icon {
+                display: block;
+            }
         }
     }
 }
@@ -87,6 +99,11 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.email {
+    color: var(--accent);
+}
+
 hr {
     margin: 5px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -130,7 +147,10 @@ pre {
     }
 }
 
-// index
+li::marker {
+    font-weight: bold;
+}
+
 .post-card{
     margin-top:1em;
     margin-bottom:1em;
