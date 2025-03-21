@@ -8,6 +8,7 @@
     @at-root {
         :root {
             --accent: #{light.$accent};
+            --strong-color: #{light.$strong-color};
             --inline-code-block-bg: #{light.$inline-code-block-bg};
             --body-bg: #{light.$body-bg};
             --text-color: #{light.$text-color};
@@ -38,6 +39,7 @@
 
         body.dark-theme {
             --accent: #{dark.$accent};
+            --strong-color: #{dark.$strong-color};
             --inline-code-block-bg: #{dark.$inline-code-block-bg};
             --body-bg: #{dark.$body-bg};
             --text-color: #{dark.$text-color};
@@ -98,6 +100,10 @@ a {
 }
 a:hover {
     text-decoration: underline;
+}
+
+strong {
+    color: var(--strong-color);
 }
 
 .email {
