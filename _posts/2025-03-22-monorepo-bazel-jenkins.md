@@ -10,6 +10,7 @@ private: true
 
 ## This is a draft blog
 
+***This section needs a rewrite**
 CI journey from when the pipeline starts
 - Find an executor
 - Clone
@@ -544,6 +545,7 @@ You should trigger all pipelines in parallel in the dispatcher.
 
 # Wrapping up
 
+**This section needs a rewrite**
 This is what our architecture looks like now:  
 ![Final architecture](/assets/beautiful-bazel-ci-flow-2.png)
 
