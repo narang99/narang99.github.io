@@ -27,6 +27,12 @@
         <div class="page-title">
             {{page.title}}
         </div>
+        {% if page.toc == true %}
+            <div class="top-level-toc">
+                <h2>Table of Contents</h2>
+                {{ content | toc_only }}
+            </div>
+        {% endif %}
         <div class="content">
             {{ content }}
         </div>

@@ -7,23 +7,11 @@ toc: true
 private: true
 ---
 
+Adopting a monorepo directly corresponds to huge investments in the CI infrastructure for an organization. This is simply because there is no open-source solution which works with monorepos out-of-the-box.  
+Conventionally, every repository has a single pipeline associated with it. This is extremely inflexible for monorepos.  
 
-## This is a draft blog
-
-***This section needs a rewrite**
-CI journey from when the pipeline starts
-- Find an executor
-- Clone
-- Bazel: load and analysis phase
-- Bazel: build/run/test
-
-
-I'm documenting my work of developing a *fast* CI framework in Jenkins, which worked closely with Bazel. 
-- A CI which selectively dispatches pipelines for the minimal packages affected by a change
-- Time to run the first piece of useful code < 2 minutes (Performance is a major requirement)
-- Strong caching capabilities  
-
-The concepts should be easily transferrable to other CI providers
+I'm documenting my work on developing a CI framework in Jenkins which allowed us to have a pipeline for each package (a directory containing a `BUILD` file) in the monorepo. The framework would detect changes in your PR/Commits and minimally trigger the pipelines associated with the affected packages.  
+The other major aspect I talk about is performance, and the efforts of bringing down the time to run the first piece of useful code to < 2 minutes for a 40 GB monorepo at [qure.ai](https://www.qure.ai).  
 
 ---
 
@@ -39,7 +27,7 @@ The problems:
 - IDE integration: Bazel python IDE integration is really hard to get right (there is no way to automatically do this with built-in rules satisfactorily). IDEs also have recently started providing support for monorepos. 
   - Intellisense (LSP and DAP integration) itself needs to support monorepos explicitly. The problem is in detecting your package boundaries and being able to provide different rules per package.  
 
-In the recent years, Microsoft has been spending some time to make the monorepo experience work better in their tooling (Windows OS is a monorepo) with [git speedups](https://github.com/microsoft/git) and [Multi-root workspaces in VSCode](https://code.visualstudio.com/docs/editor/workspaces/multi-root-workspaces). These changes have been a god-send for local development (although I still haven't found something useful with `neovim`).  
+<aside>In the recent years, Microsoft has been spending some time to make the monorepo experience work better in their tooling (Windows OS is a monorepo) with <a href="https://github.com/microsoft/git">git speedups</a> and <a href="https://code.visualstudio.com/docs/editor/workspaces/multi-root-workspaces">Multi-root workspaces in VSCode</a>. These changes have been a god-send for local development (although I still haven't found something useful with neovim).</aside>
 
 
 # The CI problem
@@ -56,6 +44,7 @@ Monorepo short-circuits and fully parallelizes this manual procedure. Now you si
 This is a very strong way of thinking about your CI. The problem now however, is that your CI is **suddenly** heavily burdened. The average load has significantly increased.  
 
 At [qure.ai](https://www.qure.ai), our Jenkins setup was not ready for this spike  
+
 
 # The first attempt
 Almost everyone starts with a single pipeline for the whole repository and may do something equivalent to this in their CI  
@@ -545,17 +534,11 @@ You should trigger all pipelines in parallel in the dispatcher.
 
 # Wrapping up
 
-**This section needs a rewrite**
+Phew! This was a big article. Thanks for sticking out until the end.  
+We now have a single-repo multi-pipeline CI setup which selectively dispatches the minimal pipelines needed to build packages in your monorepo for a given introduced change.  
+
 This is what our architecture looks like now:  
 ![Final architecture](/assets/beautiful-bazel-ci-flow-2.png)
-
-
-The performance aspects
-- Setup phase now takes < 1 minute
-- Fully cached tests (nothing runs more than once if unchanged)
-
-More importantly, now we have the ability to define and run pipelines for every package separately. This minimizes resource consumption and correctly runs all your builds (in parallel).  
-This is pretty close to **true Continuous Integration** (every code in the organization is continuously tracked and tested).  
 
 # Appendix: Simple git speedup tricks
 There are some standard tricks to speeding up git clones. I'm just putting it out here briefly, the real speedup comes in the [Analysis Cache](#analysis-cache) section
