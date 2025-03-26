@@ -6,13 +6,20 @@
 <body class="{% if site.theme == 'dark' %}dark-theme{% endif %}">
     <script>
         // Check if user has a saved theme preference
-        const bodySavedTheme = localStorage.getItem('theme');
+        // Check if user has a system theme preference
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        let bodySavedTheme = localStorage.getItem('theme');
+        if (!bodySavedTheme) {
+            bodySavedTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+        }
         
         // Set theme based on saved preference
         if (bodySavedTheme === 'dark') {
             document.body.classList.add('dark-theme');
-        } else {
+        } else if (bodySavedTheme === 'light') {
             document.body.classList.remove('dark-theme');
+        } else {
+
         }
     </script>
     <div class="container">

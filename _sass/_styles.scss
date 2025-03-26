@@ -11,6 +11,7 @@
             --strong-color: #{light.$strong-color};
             --inline-code-block-bg: #{light.$inline-code-block-bg};
             --body-bg: #{light.$body-bg};
+            --aside-bg: #{light.$aside-bg};
             --text-color: #{light.$text-color};
             --title-color: #{light.$title-color};
             --border-light: #{light.$border-light};
@@ -42,6 +43,7 @@
             --strong-color: #{dark.$strong-color};
             --inline-code-block-bg: #{dark.$inline-code-block-bg};
             --body-bg: #{dark.$body-bg};
+            --aside-bg: #{dark.$aside-bg};
             --text-color: #{dark.$text-color};
             --title-color: #{dark.$title-color};
             --border-light: #{dark.$border-light};
@@ -383,4 +385,15 @@ table tr th :last-child, table tr td :last-child {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+aside {
+    background-color: var(--aside-bg);
+    color: var(--aside-text-color);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    padding: 10px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    padding-top: 10px;
 }
