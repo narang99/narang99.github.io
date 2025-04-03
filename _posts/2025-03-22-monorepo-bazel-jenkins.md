@@ -4,7 +4,6 @@ title: Beautiful CI for Bazel
 subtitle: a correct, fast, selective, multi-pipeline CI setup for Bazel monorepos
 tags: [jenkins, bazel, ci]
 toc: true
-private: true
 ---
 
 Adopting a monorepo directly corresponds to huge investments in the CI infrastructure for an organization. This is simply because there is no open-source solution which works with monorepos out-of-the-box.  
