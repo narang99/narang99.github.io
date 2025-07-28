@@ -2,18 +2,4 @@
 layout: default
 ---
 
-<div class="page-subtitle">
-    {% for tag in page.tags %}
-        {% if page.tags.first == tag %}
-            <b>[</b>
-        {% endif %}
-        <a href="/tags/#{{ tag }}" title="{{ tag }}">{{ tag }}</a>
-        {% if page.tags.last == tag %}
-            <b>]</b>
-        {% else %}
-            ,
-        {% endif %}
-    {% endfor %}
-</div>
-
 {{ content }}

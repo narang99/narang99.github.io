@@ -27,6 +27,19 @@
         <div class="page-title">
             {{page.title}}
         </div>
+        <div class="page-subtitle">
+            {% for tag in page.tags %}
+                {% if page.tags.first == tag %}
+                    <b>[</b>
+                {% endif %}
+                <a href="/tags/#{{ tag }}" title="{{ tag }}">{{ tag }}</a>
+                {% if page.tags.last == tag %}
+                    <b>]</b>
+                {% else %}
+                    ,
+                {% endif %}
+            {% endfor %}
+        </div>
         {% if page.toc == true %}
             <div class="top-level-toc">
                 <h2>Table of Contents</h2>
