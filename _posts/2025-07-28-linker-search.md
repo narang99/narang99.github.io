@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Where's that shared library
-subtitle: A slightly long guide on how MacOS and Linux linkers find your dependencies
+subtitle: A guide on how MacOS and Linux linkers find your dependencies
 tags: [linkers, python]
 toc: true
 private: true
@@ -11,7 +11,10 @@ Recently, while working at my previous company, I had gotten interested in packa
 This turns out to be non-trivial when you have tons of imaging and AI libraries (C extensions essentially).  
 I ended up diving reasonably deep into the linker rabbit-hole (specifically the MacOS and Linux linkers), the topic of this article.  
 
-***NOTE:*** *There are references to python ecosystem in this article, but the crux is really about shared libraries and how the linker finds the dependencies your application expects. Being a python developer should not be a pre-requisite*
+In this article, instead of starting with theory, I'm starting with practical problems we find in our day jobs related to dynamic linking and build the theory from there.  
+
+> **NOTE:** There are references to python ecosystem in this article, but the crux is really about shared libraries and how the linker finds the dependencies your application expects.  
+> I also discuss how we can create standalone relocatable distributions when shipping applications with shared libraries. Being a python developer should not be a pre-requisite
 
 # The problem
 
@@ -152,7 +155,7 @@ compatibility version 58.0.0
 ```
 
 `dyld` is trying to load the library `libavcodec.58.dylib` at `/opt/homebrew/opt/ffmpeg/lib/libavcodec.58.dylib`.  
-> The output is very verbose. If you just a quick glance at the dependencies, use `otool -L` (capital `L`). All the idented paths are dependencies.  
+> The output is very verbose. If you just want a quick glance at the dependencies, use `otool -L` (capital `L`).  
 
 Running `ls /opt/homebrew/opt/ffmpeg/lib/libavcodec.58.dylib`, I can see that it does not exist in my system. A quick google asks us to install `ffmpeg` using `brew install ffmpeg`.  
 I still get the same stack trace, the file `/opt/homebrew/opt/ffmpeg/lib/libavcodec.58.dylib` still does not exist. The directory `/opt/homebrew/opt/ffmpeg/lib/` however, does exist. Running `ls` we see this.  
@@ -176,7 +179,7 @@ We could technically uninstall `ffmpeg` and create a symlink at `/opt/homebrew/o
 brew uninstall ffmpeg
 ln -s /opt/homebrew/opt/ffmpeg@4 /opt/homebrew/opt/ffmpeg
 ```
-I get a numpy version mismatch error, but the problem is solved now. `opencv` is able to find its dependencies.  
+I get a numpy version mismatch error, but this specific problem is solved now. `opencv` is able to find its dependencies.  
 
 ### DYLD_LIBRARY_PATH
 
@@ -184,14 +187,14 @@ It is unreasonable to ask users to uninstall other library versions for this cas
 
 If the dependency is specified by an absolute path `/opt/homebrew/opt/ffmpeg@4/lib/libavcodec.58.dylib`, `dyld` will search for the library using its leaf name (`libavcodec.58.dylib`) in all the directories in `DYLD_LIBRARY_PATH`, if the file exists in any of these directories, its loaded.  
 
-The solution is to set `DYLD_LIBRARY_PATH` before starting python process  
+The solution is to set `DYLD_LIBRARY_PATH` before starting the main process.  
 ```bash
 # our startup file: run.sh 
 export DYLD_LIBRARY_PATH="/opt/homebrew/opt/ffmpeg@4/lib/:$DYLD_LIBRARY_PATH"
 python main.py
 ```
 
-> Make sure you do not set `DYLD_LIBRARY_PATH` in your bashrc files, this would set it globally, it can affect other applications
+> Make sure you do not set `DYLD_LIBRARY_PATH` in your bashrc files, this would set it globally, it can affect other applications.  
 > It's reasonably safe to use it like this in startup scripts.  
 
 This solves our problem, `opencv` loads without uninstalling `ffmepg@7` system-wide.  
@@ -200,7 +203,7 @@ This solves our problem, `opencv` loads without uninstalling `ffmepg@7` system-w
 
 This `opencv` installation is using absolute paths for its dependency load commands. This is the reason it is so painful for us as the end users to make this specific version work.   
 It also makes shipping very annoying. We can't hope the end user would have some dependency installed at an exact location we want. It is also risky to ship the dependencies at those exact locations, as they might conflict with existing software in the user's machine (as `ffmpeg@4` conflicted with `ffmpeg@7` in my machine).  
-The solution to provide libraries with all the dependencies contained in the distribution without conflicting with existing software is to use `rpaths`.  
+The solution is to provide libraries with all the dependencies contained in the distribution without conflicting with existing software is to use `rpaths`.  
 
 *NOTE: You could use `DYLD_LIBRARY_PATH` to ship too (simply put all dependencies in one directory in your distribution, and set the environment variable in your startup script before calling your main program). This does not work though, I'll come to this problem later in the article*
 
@@ -222,7 +225,7 @@ pip install opencv-python-headless opencv-python --upgrade
 If you run the main program, the code would run without any problems! What happened?  
 
 ---
-Let's look at the dependency of the shared library this version of `cv2` imports. It's at `site-packages/cv2/cv2.abi3.so`. Let's look at its dependencies.  
+Let's look at the dependencies of the shared library this version of `cv2` imports. It's at `site-packages/cv2/cv2.abi3.so`.   
 
 ```bash
 otool -L site-packages/cv2/cv2.abi3.so
@@ -245,17 +248,18 @@ These are now neither absolute not relative paths. They don't even look like act
 
 For every `LD_LOAD_DYLIB` command, `dyld` expands the path of each dependency using some rules. It provides three variables `@loader_path`, `@executable_path` and `@rpath`, which it dynamically resolves during runtime.  
 
-`@loader_path` expands to the parent directory of the object file that `dyld` is analysing. `@executable_path` expands to the main executables parent directory path (In our case, this is the directory `python` resides in).  
+`@loader_path` expands to the parent directory of the object file that `dyld` is analysing. `@executable_path` expands to the main executable's parent directory path (In our case, this is the directory `python` resides in).  
 <img class="floating-right-picture" src="/assets/mindblown-duck.png">
 
 > This capability is **remarkable**. While compiling object files, we can point to dependencies relative to the current object file. This allows us to ship applications which would have all their dependencies packaged in the distribution.  
 
-My `cv2.abi3.so` exists at `/<path-to-site-packages>/cv2/cv2.abi3.so`.  
-`@loader_path` resolves to `/<path-to-site-packages>/cv2`.   
-The dependency `@loader_path/.dylibs/libavcodec.61.19.101.dylib` resolves to `/<path-to-site-packages>/cv2/.dylibs/libavcodec.61.19.101.dylib`.  
-Running `ls`, I can see that this file exists in my system.  
+Concrete steps:
+- My `cv2.abi3.so` exists at `/<path-to-site-packages>/cv2/cv2.abi3.so`.  
+- `@loader_path` resolves to `/<path-to-site-packages>/cv2`.   
+- The dependency `@loader_path/.dylibs/libavcodec.61.19.101.dylib` resolves to `/<path-to-site-packages>/cv2/.dylibs/libavcodec.61.19.101.dylib`.  
+- Running `ls`, I can see that this file exists in my system.  
 
-If you look closely at the opencv installation, it would have a directory `.dylibs` in the top level of the package. Running `ls` on it
+If you look closely at the opencv installation, it would have a directory `.dylibs` in the top level of the package. Running `ls` on it, we see a lot of shared libraries.  
 ```bash
 $ ls /Users/hariomnarang/miniconda3/envs/linkers/lib/python3.9/site-packages/cv2/.dylibs
 
@@ -288,7 +292,7 @@ $ otool -L /Users/hariomnarang/miniconda3/envs/linkers/lib/python3.9/site-packag
         @loader_path/libwebp.7.1.10.dylib 
 ```
 
-And these dependencies in turn do the same, each uses their own `@loader_path` expansion to correctly define its dependencies deterministically.  
+And these dependencies in turn do the same, each uses their own `@loader_path` expansion to correctly define its dependencies deterministically. This makes the installation isolated, allowing us to place the package anywhere and *it would just work*.    
 
 ### @rpath
 
@@ -327,15 +331,15 @@ The command `@rpath/libncursesw.6.dylib` expands to `@loader_path/libncursesw.6.
 
 `dyld` approximately does these steps (in order) for searching, this is stripped down version.  
 
-> `man dlopen` is the source of truth, I'm skipping Mac frameworks here.
+> `man dlopen` is the source of truth, I'm skipping Mac frameworks and a lot of other environment variables here.  
 
 - Search the leaf name in `DYLD_LIBRARY_PATH`
 - If its not a path like component (simply specifying the library name in load command), search in the current directory
 - Expand `@rpath, @executable_path, @loader_path` for each path-like dependency. If its a relative path, use the current directory to resolve.  
 
-If a file exists at any step, it is loaded.  
+If a file exists at any step, it is loaded. If the linker cannot find the dependency, load fails.  
 
-## Comparison with Linux
+## TODO: Comparison with Linux
 
 The linux search order is slightly similar to MacOS. I'm going to briefly explain the similarities and differences for each step described in the previous section.  
 
@@ -343,3 +347,5 @@ Reading the dependencies of a file
 ```bash
 $ readelf -d <>
 ```
+
+# Symbol resolution
