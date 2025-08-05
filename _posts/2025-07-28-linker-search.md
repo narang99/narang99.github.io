@@ -348,4 +348,214 @@ Reading the dependencies of a file
 $ readelf -d <>
 ```
 
+# Changing dependencies
+
+Given an object file, you could change the list of its dependencies quit easily. Consider the problem of changing our older installation of opencv which depended on `ffmpeg@4`. Our goal is to create a single folder which works similar to the newer version, where all the dependencies have been packaged and shipped along with the object file `cv2.abi3.so` (note that the older file is called `cv2.cpython-39-darwin.so`).    
+
+The main problem is load commands which use absolute paths.  
+```bash
+Load command 12
+          cmd LC_LOAD_DYLIB
+      cmdsize 80
+         name /opt/homebrew/opt/ffmpeg/lib/libavcodec.58.dylib (offset 24)
+   time stamp 2 Thu Jan  1 05:30:02 1970
+      current version 58.134.100
+compatibility version 58.0.0
+```
+
+We want to change this to `@loader_path/.dylibs/libavcodec.58.dylib` for MacOS.  
+We can do this using `install_name_tool` (pre-installed with XCode Command Line tools).  
+
+```bash
+install_name_tool -change \
+    '/opt/homebrew/opt/ffmpeg/lib/libavcodec.58.dylib' \
+    '@loader_path/.dylibs/libavcodec.58.dylib' \
+    ./cv2.cpython-39-darwin.so
+```
+For linux, you can add a new entry in `DT_RUNPATH` using [patchelf](https://github.com/NixOS/patchelf).  
+```bash
+patchelf --add-rpath \
+    '$ORIGIN/.dylibs' \
+    ./cv2.cpython-39-darwin.so
+```
+You would need to do this process for `libavcodec.58.dylib` and its dependencies too. Do this recursively for ALL the dependencies of `cv2.cpython-39-darwin.so`.  
+
+This ability is **key to create relocatable isolated distributions from an existing developer machine**. It is used by many Python Application packagers to create isolated folders.  
+
 # Symbol resolution
+
+
+We have seen how the linker searches for an object file's dependencies (which are themselves object files). After discovery, the object file should be able to use the functions or variables defined in its dependencies.  
+Roughly, symbols can be considered the "interface" of a shared library. A symbol can be a function name, it can be a global variable name, and so on.  
+
+Each shared library has a symbol table. You can use the `nm` utility to see all the symbols exposed by an object file.   
+```bash
+$ nm site-packages/cv2/cv2.abi3.so | tail
+
+00000000010a9574 t _ycc_rgb_convert
+00000000010424a4 t _ycck_cmyk_convert
+0000000001090f64 t _ycck_cmyk_convert
+00000000010ab268 t _ycck_cmyk_convert
+0000000001871850 s _z_errmsg
+000000000128b864 t _zcalloc
+000000000128b86c t _zcfree
+00000000014a8fc4 s _zeroruns
+000000000186b050 s _zipFields
+                 U dyld_stub_binder
+```
+
+The dependent object file would have stub (dummy) statements for all the references of symbols it does not contain. The linker is responsible for replacing those with the correct addresses.  
+The problem is simple enough to understand, given an object file and a set of its dependencies, replace all stubs in the object files with the correct addresses found from the dependencies. This is called symbol resolution.  
+
+## what about clashes?
+
+What if two libraries provide the same symbol name? Which definition wins?  
+The answer to this is actually pretty interesting, and it was not what I had assumed it would be at all.  
+I will first discuss the simple case, Linux. MacOS has a more sophisticated symbol resolution process, and it is amazing :)    
+
+I will use a hypothetical example here.  
+
+```bash
+# `left -> right` means left depends on right
+a.out -> libA.so -> libC.so
+      -> libB.so -> libD.so
+
+# both libE.so differ slightly, 
+libC.so -> ../C/libE.so
+libD.so -> ../D/libE.so
+```
+
+In the example above, `libA.so` and `libB.so` both define a symbol called `direct_clash`. `libC.so` and `libD.so` also both define a common symbol called `transitive_clash`.   
+`libC.so` depends on `../C/libE.so` and `libD.so` depends on `../D/libE.so`. Although the library names are same, they have different content. For the sake of this example, `../D/libE.so` has an extra symbol called `extra_symbol`.  
+
+The whole set of libraries that `a.out` depends on transitively will be called the dependency closure (`libA.so, libB.so, libC.so, libD.so, ../C/libE.so, ../D/libE.so` in this case).  
+
+### Linux
+
+The linux linker would arbitrarily pick a single defintion for every clash. This is mostly the library that is first loaded in the linker. It would happen for both `direct_clash` and `transitive_clash`. The linker maintains a flat namespace for all symbols.  
+Flat namespaces are bad, all the symbols defined by any shared library should be **unique in the whole dependency closure**.  
+
+Another problem is that the linker only maintains one copy of symbols for every library it ever loads. If `../C/libE.so` is loaded first, `../D/libE.so` won't be loaded. This will break symbol resolution for `libD.so` (as its actual dependency is not really loaded).  
+This is a far-fetched example, but this might happen if you depend on different versions of the same library transitively.  
+
+The MacOS linker is more complicated and solves many of the problems above.  
+
+### MacOS
+
+The MacOS does not maintain a flat namespace for symbols (yayy).  
+- If there is a symbol clash in direct dependencies of any object file, then the winner is arbitrary (the first one to load most likely). In our case, `a.out` would only see a single definition of `direct_clash`. This is similar to importing the same name in a python file from different modules (although in case of python, the last imported symbol wins).   
+- For all the other cases, there is no clash. `transitive_clash` won't clash. `libA.so` will see the definition in `libC.so`, `libB.so` will see it in `libD.so`.  
+
+The same holds true for loading libraries with the same name but different content. If it is not done by any direct dependency, we are good. You can imagine the MacOS linker maintaining a table for symbol resolution separately for each shared library.  
+
+This is why you can't put every shared library in a single folder and set it in `DYLD_LIBRARY_PATH`. In the wild, you might have multiple library definitions with the same name while having symbol clashes (especially in the python ecosystem).  
+
+# Packaging
+
+As we saw above, since the MacOS linker does not maintain a flat namespace, defining a folder structure while packaging your application for distribution is slightly more tricky.  
+
+We will use the same example as we used in the Symbol Resolution section.  
+```bash
+# `left -> right` means left depends on right
+a.out -> libA.so -> libC.so
+      -> libB.so -> libD.so
+
+# both libE.so differ slightly, 
+libC.so -> ../C/libE.so
+libD.so -> ../D/libE.so
+```
+
+The structure we could start out with could be
+```bash
+a.out
+libs
+    libA.so
+    libB.so
+    Adeps
+        libC.so
+        Cdeps
+            libE.so
+    Bdeps
+        libD.so
+        Ddeps
+            libE.so
+```
+We would need to patch each library to point to the correct dependency (`libA.so` would have an entry `@loader_path/Adeps/libC.so` in MacOS, in Linux we would simply set `DT_RUNPATH=$ORIGIN/Adeps`)    
+This works, but it can quickly get very unwieldy in case of a large set of dependencies. We might also end up with duplicate file copies if two object files depend on the same dependency, costing us disk space.  
+
+
+## A better way
+
+We have two goals
+- Minimise nesting while allowing the MacOS linker to provide a nested namespace (using a flat structure which mimics nested structures)
+- Minimise copying (using symlinks)
+
+> The structure I came up with is very similar to how [pnpm does it for node_modules](https://pnpm.io/symlinked-node-modules-structure).  
+> Although I didn't have this in mind while finding a structure for my application, I naturally ended up to a similar one (reinventing the wheel is a hobby now 😭).   
+
+```bash
+# `->` is a symlink here
+reals
+    r
+        libA-1a2b3c4d5e.so
+        libB-6f7g8h9i0j.so
+        libC-2b4d6f8h0j.so
+        libD-3c5e7g9i1k.so
+        libE-4d6f8h0j2l.so
+        libE-5e7g9i1k3m.so
+        a-1231fwsdkjjv1.out
+symlinks
+    libA-1a2b3c4d5e.so
+        libC.so -> ../../reals/r/libC-2b4d6f8h0j.so
+    libB-6f7g8h9i0j.so
+        libD.so -> ../../reals/r/libD-3c5e7g9i1k.so
+    libC-2b4d6f8h0j.so
+        libE.so -> ../../reals/r/libE-4d6f8h0j2l.so
+    libD-3c5e7g9i1k.so
+        libE.so -> ../../reals/r/libE-5e7g9i1k3m.so
+    a-1231fwsdkjjv1.out
+        libA.so -> ../../reals/r/libA-1a2b3c4d5e.so
+        libB.so -> ../../reals/r/libB-6f7g8h9i0j.so
+bin
+    b
+        a.out -> ../../reals/r/a-1231fwsdkjjv1.out
+```
+
+- All the shared libraries are kept in the `reals/r` directory. 
+  - The first thing you notice is that we also attach random hashes to file names along with their names. This is to make sure the two different `libE.so` do not clash.  
+- For every shared library in `reals/r`, we have a directory of the library's name in `symlinks` folder (`symlinks/libA-1a2b3c4d5e.so` as an example). 
+  - This is the folder which contains all the direct dependencies of the corresponding file in the `reals/r` directory.  
+  - As an example we have a symlink `libC.so` in `symlinks/libA-1a2b3c4d5e.so` pointing to the actual `libC.so` in the `reals/r` directory
+- We use `../../symlinks/libA-1a2b3c4d5e.so` as the LC_RPATH for the object file `@loader_path/../../libA-1a2b3c4d5e.so` (for linux we set `DT_RUNPATH` to `$ORIGIN/../../libA-1a2b3c4d5e.so`).  
+  - All dependencies are specified using this RPath.  
+  - For MacOS, there would be one LC_LOAD_DYLIB command `@rpath/libC.so`. For linux, we simply have `libC.so` as a `DT_NEEDED` entry.  
+
+
+That's about it. The algorithm and code to generate this structure is also remarkably easy since it's a flat structure.  
+
+### why use `reals/r` instead of `reals`
+
+There is one extra weird detail, I'm using `reals/r` as the base directory for all real object files. Why the extra directory depth?  
+Let's consider how the linker would load `libA.so` for `a.out`.  
+I'm doing this for MacOS but since the scheme is the same for Linux, the steps should be easy to translate.  
+
+- `a.out` has `RPath = @loader_path/../../symlinks/a-1231fwsdkjjv1.out`. The loader tries to load `libA.so`
+- The RPath for `libA.so` is set to `@loader_path/../../symlinks/libA-1a2b3c4d5e.so`
+
+
+Now, what is the value of `@loader_path` that the linker uses (`$ORIGIN` in Linux)?   
+Is it the path of the symlink `symlinks/a-1231fwsdkjjv1.out/libA.so`? Or is it the real path `reals/r/libA-1a2b3c4d5e.so`.    
+It's the real path in case of MacOS and the symlink path in case of Linux.  
+
+> The crux of the problem is that Linux/MacOS use different strategies for assigning the value of `$ORIGIN`/`@loader_path`.  
+> In case of Linux, it is the path it loaded the library from, it does not matter if it's a symlink.  
+> MacOS would use the real path.  
+
+
+It does not matter what the linker does for us, because the path `../../symlinks/libA-1a2b3c4d5e.so` points to the same location regardless.  
+- `@loader_path/../../symlinks/libA-1a2b3c4d5e.so` resolves to `reals/r/../../symlinks/libA-1a2b3c4d5e.so`
+- `$ORIGIN/../../symlinks/libA-1a2b3c4d5e.so` resolves to `symlinks/a-1231fwsdkjjv1.out/../../symlinks/libA-1a2b3c4d5e.so`
+
+We basically keep all the files at the same depth from the root of the package.  
+
+# The Python Packaging Problem
