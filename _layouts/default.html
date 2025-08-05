@@ -40,6 +40,9 @@
                 {% endif %}
             {% endfor %}
         </div>
+        {% if page.layout == "post" %}
+        <div style="text-align: center;">{{ page.content | number_of_words }} words</div>
+        {% endif %}
         {% if page.toc == true %}
             <div class="top-level-toc">
                 <h2>Table of Contents</h2>
