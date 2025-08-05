@@ -41,7 +41,7 @@
             {% endfor %}
         </div>
         {% if page.layout == "post" %}
-        <div style="text-align: center;">{{ page.content | number_of_words }} words</div>
+        <div style="text-align: center;">{{ page.content | strip_html | number_of_words }} words</div>
         {% endif %}
         {% if page.toc == true %}
             <div class="top-level-toc">
