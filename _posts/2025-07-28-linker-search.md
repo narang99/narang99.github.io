@@ -4,7 +4,6 @@ title: Where's that shared library
 subtitle: A guide on how MacOS and Linux linkers find your dependencies
 tags: [linkers, python]
 toc: true
-private: true
 ---
 
 Recently, while working at my previous company, I had gotten interested in packaging my Python application. The goal was to create a self-contained directory that would be able to run our application on any machine (which won't have Python installed as well).  
