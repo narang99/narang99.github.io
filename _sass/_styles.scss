@@ -241,16 +241,15 @@ li::marker {
         ul{
             padding: 10px 0 10px 0;
             margin: 0;
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             float: none;
-            text-align: center;
             width: 100%;
         }
-        li{
-            margin: 0;
-        }
-        .pull-left{
-            float: none;
+        li {
+            display: inline-block;
+            text-align: center;
         }
         .site-title{
             width: 100%;
