@@ -210,7 +210,6 @@ The solution is to provide libraries with all the dependencies contained in the 
 
 ### @loader_path, @executable_path
 
-<img class="floating-right-picture" src="/assets/confused-psyduck.png">
 Let's update opencv, and also remove ffmpeg :)
 
 ```bash
@@ -328,7 +327,7 @@ The command `@rpath/libncursesw.6.dylib` expands to `@loader_path/libncursesw.6.
 
 `@rpath` provides an extra level of indirection. A pattern is to use `@rpath/<dep-name>.so` for each dependency and set correct rpaths using `LC_RPATH`. Since we can add multiple `LC_RPATH` commands, it increases the search space the linker uses.  
 
-### the search order
+### search order
 
 `dyld` approximately does these steps (in order) for searching. This is a stripped-down version.  
 
@@ -337,6 +336,7 @@ The command `@rpath/libncursesw.6.dylib` expands to `@loader_path/libncursesw.6.
 - Search the leaf name in `DYLD_LIBRARY_PATH`
 - If its not a path like component (simply specifying the library name in load command), search in the current directory
 - Expand `@rpath, @executable_path, @loader_path` for each path-like dependency. If its a relative path, use the current directory to resolve.  
+- Search the leaf name in `DYLD_FALLBACK_LIBRARY_PATH`, for older binaries, the default is `/usr/local/lib:/usr/lib`. You should not rely on it for your dependencies though
 
 If a file exists at any step, it is loaded. If the linker cannot find the dependency, loading fails.  
 
@@ -418,6 +418,19 @@ The Linux linker uses the RPaths for all the ancestors of the object file it is 
 If you imagine this as a graph, the set of RPaths used for searching is the union of all RPaths of all the ancestors (recursively) analyzed to reach this file. The order of how the linker reached this file matters now.  
 
 `DT_RUNPATH` is much simpler. The linker only uses the `RUNPATH` entry in the object file. It does not care about other files at all (similar to macOS).  
+
+### search order
+
+This is again a stripped down version, check `man ld.so` for the full version.  
+
+- If `DT_NEEDED` is path-like, directly try to load using the path (can be relative or absolute, relative paths are resolved using current working directory)
+- Else
+  - If the binary does not have `DT_RUNPATH` but has `DT_RPATH`, search in those directories.  
+  - `LD_LIBRARY_PATH`
+  - `DT_RUNPATH`
+  - Check `ldconfig` cache (you can query it by running the command `ldconfig -p`).  
+  - Default paths: `/usr/lib`, `/lib`.  
+
 
 # Changing dependencies
 
@@ -646,8 +659,11 @@ Providing a good FFI has allowed developers to be productive with Python while h
 The flip side of this is that the package maintainer needs to find a good way to ship these shared libraries. Many of them, however, do not provide isolated folders containing all the required dependencies (as seen in older versions of OpenCV; they fixed it in the latest).  
 Library developers are increasingly providing these isolated structures. All the major libraries I've used do this.  
 
+<img class="floating-right-picture" src="/assets/selling-duck.png">
+
 > Some advertising: I wrote this article while researching and developing [shenzi, a greedy Python standalone bundler](https://github.com/narang99/shenzi).  
 > A lot of details are from that code.  
+
 
 
 ## Why is it hard to make Python apps relocatable
