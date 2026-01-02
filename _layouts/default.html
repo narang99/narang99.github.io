@@ -12,7 +12,7 @@
         if (!bodySavedTheme) {
             bodySavedTheme = prefersDarkScheme.matches ? 'dark' : 'light';
         }
-        
+
         // Set theme based on saved preference
         if (bodySavedTheme === 'dark') {
             document.body.classList.add('dark-theme');
@@ -22,36 +22,24 @@
 
         }
     </script>
-    <div class="container">
-        {% include navbar.html %}
-        <div class="page-title">
-            {{page.title}}
-        </div>
-        <div class="page-subtitle">
-            {% for tag in page.tags %}
-                {% if page.tags.first == tag %}
-                    <b>[</b>
-                {% endif %}
-                <a href="/tags/#{{ tag }}" title="{{ tag }}">{{ tag }}</a>
-                {% if page.tags.last == tag %}
-                    <b>]</b>
-                {% else %}
-                    ,
-                {% endif %}
-            {% endfor %}
-        </div>
-        {% if page.layout == "post" %}
-        <div style="text-align: center;">{{ page.content | strip_html | number_of_words }} words</div>
-        {% endif %}
-        {% if page.toc == true %}
-            <div class="top-level-toc">
-                <h2>Table of Contents</h2>
-                {{ content | toc_only }}
-            </div>
-        {% endif %}
-        <div class="content">
-            {{ content }}
-        </div>
-        {% include footer.html %}
+    <div class="container"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
+        <h1>The blog has moved.</h1>
+        <p style="margin-top: 1rem;">Please click the link below to go to the new location:</p>
+        <p style="font-size: 1.2rem; margin-top: 0.5rem;">
+            <a id="redirect-link" href="https://pages.narang99.in/">https://pages.narang99.in/</a>
+        </p>
+        <script>
+            (function () {
+                var newBase = "https://pages.narang99.in";
+                var currentPath = window.location.pathname;
+                var newUrl = newBase + currentPath;
+                var link = document.getElementById('redirect-link');
+                if (link) {
+                    link.href = newUrl;
+                    link.textContent = newUrl;
+                }
+            })();
+        </script>
     </div>
 </body>
